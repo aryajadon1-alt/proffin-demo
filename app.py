@@ -10,7 +10,7 @@ st.title("⚖️ Proffin AI - Sec 198 Auditor (Ultimate Fix)")
 
 try:
     genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    model = genai.GenerativeModel("gemini-1.5-flash")
 except Exception as e:
     st.error("🚨 API Key Error!")
 
@@ -38,8 +38,31 @@ if uploaded_pdf and uploaded_template:
             
             try:
                 response = model.generate_content(ai_prompt)
-                raw_text = response.text.strip()
                 
-                if raw_text.startswith('
-http://googleusercontent.com/immersive_entry_chip/0
-http://googleusercontent.com/immersive_entry_chip/1
+                # यहाँ मैंने कोड बदल दिया है ताकि कोई लाइन न टूटे
+                raw_text = response.text.replace("```json", "").replace("```", "").strip()
+                extracted_data = json.loads(raw_text)
+                
+                ext_pat = float(extracted_data.get("pat", 0))
+                ext_premium = float(extracted_data.get("premium", 0))
+                ext_remun = float(extracted_data.get("remuneration", 0))
+                ext_past_losses = float(extracted_data.get("past_losses", 0))
+                
+                st.success("✅ Extraction Complete!")
+                st.json(extracted_data)
+                
+                wb = openpyxl.load_workbook(uploaded_template)
+                sheet = wb.active 
+                sheet["E5"] = ext_pat
+                sheet["E6"] = ext_premium
+                sheet["E7"] = ext_remun
+                sheet["E8"] = ext_past_losses
+                
+                virtual_workbook = io.BytesIO()
+                wb.save(virtual_workbook)
+                virtual_workbook.seek(0)
+                
+                st.download_button("📥 Download Excel", virtual_workbook, "Proffin_Final.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                
+            except Exception as e:
+                st.error(f"Error: {e}")
