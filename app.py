@@ -7,32 +7,16 @@ import google.generativeai as genai
 
 # --- 1. Page Setup ---
 st.set_page_config(page_title="Proffin AI Auditor", page_icon="⚖️", layout="wide")
-st.title("⚖️ Proffin AI - Sec 198 Auditor (Final Clean Version)")
-st.subheader("Smart Engine with Traffic Controller 🚦")
+st.title("⚖️ Proffin AI - Sec 198 Auditor (Fixed Engine 🔒)")
+st.subheader("Locked to the most stable free AI model")
 
-# --- 2. API Key & Auto-Detect AI Setup ---
+# --- 2. API Key Setup ---
 try:
     genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
     
-    working_models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
-    
-    active_model_name = None
-    for name in working_models:
-        if 'gemini-1.5-flash' in name:
-            active_model_name = name
-            break
-            
-    if not active_model_name:
-        for name in working_models:
-            if 'gemini-1.0-pro' in name or 'gemini-pro' in name:
-                active_model_name = name
-                break
-                
-    if active_model_name:
-        model = genai.GenerativeModel(active_model_name)
-        st.sidebar.success(f"🚀 AI Engine Online: {active_model_name}")
-    else:
-        st.error("🚨 तुम्हारी API Key के लिए कोई भी मॉडल एक्टिव नहीं है!")
+    # 🚨 सारा ऑटो-डिटेक्ट हटा दिया! सीधा सबसे बेस्ट फ्री मॉडल को लॉक कर दिया है 🚨
+    model = genai.GenerativeModel('gemini-1.5-flash')
+    st.sidebar.success("🚀 AI Engine Online: gemini-1.5-flash")
 
 except Exception as e:
     st.warning("🚨 Streamlit Secrets में API Key नहीं मिली!")
@@ -76,7 +60,6 @@ if uploaded_pdf and uploaded_template:
                 response = model.generate_content(ai_prompt)
                 raw_text = response.text.strip()
                 
-                # यहाँ मैंने कोड को कॉपी-पेस्ट प्रूफ कर दिया है
                 if raw_text.startswith('```json'):
                     raw_text = raw_text[7:]
                 if raw_text.endswith('```'):
@@ -93,10 +76,7 @@ if uploaded_pdf and uploaded_template:
                 st.json(extracted_data)
                 
             except Exception as e:
-                if "429" in str(e) or "Quota" in str(e):
-                    st.warning("🚦 ओवरस्पीडिंग! Google ने 1 मिनट का ब्रेक लिया है। कृपया 60 सेकंड बाद दोबारा बटन दबाएं।")
-                else:
-                    st.error(f"AI Error: {e}")
+                st.error(f"AI Error: {e}")
                 st.stop()
 
         # Excel Automation
