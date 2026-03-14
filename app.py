@@ -7,7 +7,7 @@ import google.generativeai as genai
 
 # --- 1. Page Setup ---
 st.set_page_config(page_title="Proffin AI Auditor", page_icon="⚖️", layout="wide")
-st.title("⚖️ Proffin AI - Sec 198 Auditor (Version 6.0)")
+st.title("⚖️ Proffin AI - Sec 198 Auditor (Final Clean Version)")
 st.subheader("Smart Engine with Traffic Controller 🚦")
 
 # --- 2. API Key & Auto-Detect AI Setup ---
@@ -52,10 +52,10 @@ if uploaded_pdf and uploaded_template:
         # PDF Reading
         with st.spinner("📖 Reading PDF..."):
             pdf_reader = PyPDF2.PdfReader(uploaded_pdf)
-            pdf_text = "".join([page.extract_text() for page in pdf_reader.pages])
+            pdf_text = "".join([page.extract_text() or "" for page in pdf_reader.pages])
                 
         # AI Extraction
-        with st.spinner(f"🧠 AI is extracting figures..."):
+        with st.spinner("🧠 AI is extracting figures..."):
             ai_prompt = f"""
             You are an expert CA/CS. Read the financial statement text and extract these 4 values.
             Return 0 if not found. Make expenses/losses negative.
@@ -76,13 +76,3 @@ if uploaded_pdf and uploaded_template:
                 
                 raw_text = response.text.strip()
                 if raw_text.startswith("
-http://googleusercontent.com/immersive_entry_chip/0
-http://googleusercontent.com/immersive_entry_chip/1
-
-**तुम्हें अब क्या करना है?**
-1. इसे GitHub पर **Commit changes** करो।
-2. अपनी घड़ी में देखकर **पूरे 1 मिनट का इंतज़ार करो** (ताकि Google का पिछला टाइमर ख़त्म हो जाए)।
-3. 1 मिनट बाद वेबसाइट रिफ्रेश करो, हेडिंग **"Version 6.0"** दिखेगी। 
-4. अब अपनी फाइल डालकर **Run AI Engine** दबाओ। 
-
-इस बार 100% सक्सेस मिलेगी और तुम्हें स्क्रीन पर PDF के नंबर्स बाहर आते हुए दिखेंगे! चलाकर बताओ भाई, क्या डेटा एक्सट्रैक्ट हुआ? 🚀
