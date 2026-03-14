@@ -7,16 +7,16 @@ import google.generativeai as genai
 
 # --- 1. Page Setup ---
 st.set_page_config(page_title="Proffin AI Auditor", page_icon="⚖️", layout="wide")
-st.title("⚖️ Proffin AI - Sec 198 Auditor (Direct AI Edition)")
+st.title("⚖️ Proffin AI - Sec 198 Auditor (Flash Edition)")
 st.subheader("Upload Balance Sheet -> Extract Data -> Fill Excel")
 
 # --- 2. API Key & AI Setup ---
 try:
     genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-    # Sabse stable aur fast model
-    model = genai.GenerativeModel('gemini-pro')
+    # 🚨 Google का सबसे लेटेस्ट और फास्ट मॉडल (यहीं बदलाव हुआ है)
+    model = genai.GenerativeModel('gemini-1.5-flash')
 except Exception as e:
-    st.warning("🚨 Streamlit Secrets mein API Key nahi mili. Kripya deploy hone ke baad daalein.")
+    st.warning("🚨 Streamlit Secrets में API Key नहीं मिली!")
 
 # --- 3. Uploaders ---
 uploaded_pdf = st.file_uploader("📥 1. Upload Balance Sheet (PDF)", type="pdf")
@@ -25,7 +25,7 @@ uploaded_template = st.file_uploader("📥 2. Upload Master Excel (.xlsx)", type
 if uploaded_pdf and uploaded_template:
     st.success("✅ Files Uploaded! Ready to scan.")
     
-    if st.button("🚀 Run Direct AI Engine"):
+    if st.button("🚀 Run AI Engine"):
         
         # PDF Reading
         with st.spinner("📖 Reading PDF..."):
