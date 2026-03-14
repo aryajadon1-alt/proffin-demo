@@ -6,11 +6,12 @@ import PyPDF2
 import google.generativeai as genai
 
 st.set_page_config(page_title="Proffin AI Auditor", page_icon="⚖️", layout="wide")
-st.title("⚖️ Proffin AI - Sec 198 Auditor (Ultimate Fix)")
+st.title("⚖️ Proffin AI - Sec 198 Auditor (Gemini 2.5 Edition)")
 
 try:
     genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-    model = genai.GenerativeModel("gemini-1.5-flash")
+    # 🚨 यहाँ मैंने तुम्हारी चाबी के हिसाब से मॉडल का नाम 2.5 कर दिया है 🚨
+    model = genai.GenerativeModel("gemini-2.5-flash")
 except Exception as e:
     st.error("🚨 API Key Error!")
 
@@ -39,7 +40,7 @@ if uploaded_pdf and uploaded_template:
             try:
                 response = model.generate_content(ai_prompt)
                 
-                # यहाँ मैंने कोड बदल दिया है ताकि कोई लाइन न टूटे
+                # बिना लाइन टूटे डेटा निकालने का सेफ तरीका
                 raw_text = response.text.replace("```json", "").replace("```", "").strip()
                 extracted_data = json.loads(raw_text)
                 
@@ -65,4 +66,8 @@ if uploaded_pdf and uploaded_template:
                 st.download_button("📥 Download Excel", virtual_workbook, "Proffin_Final.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
                 
             except Exception as e:
-                st.error(f"Error: {e}")
+                # पुराना वाला सेफ एरर हैंडलर वापस लगा दिया है
+                if "429" in str(e) or "Quota" in str(e):
+                    st.warning("🚦 ओवरस्पीडिंग! Google ने 1 मिनट का ब्रेक लिया है। कृपया 60 सेकंड बाद दोबारा बटन दबाएं।")
+                else:
+                    st.error(f"Error: {e}")
