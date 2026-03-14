@@ -77,15 +77,45 @@ if uploaded_pdf and uploaded_template:
             try:
                 response = model.generate_content(ai_prompt)
                 
-                # Text Cleaning
+                # Text Cleaning (ये वाला हिस्सा मैंने ठीक कर दिया है)
                 raw_text = response.text.strip()
-                if raw_text.startswith("
-http://googleusercontent.com/immersive_entry_chip/0
-http://googleusercontent.com/immersive_entry_chip/1
+                if raw_text.startswith("```json"):
+                    raw_text = raw_text[7:]
+                if raw_text.endswith("```"):
+                    raw_text = raw_text[:-3]
+                    
+                extracted_data = json.loads(raw_text.strip())
+                
+                ext_pat = float(extracted_data.get("pat", 0))
+                ext_premium = float(extracted_data.get("premium", 0))
+                ext_remun = float(extracted_data.get("remuneration", 0))
+                ext_past_losses = float(extracted_data.get("past_losses", 0))
+                
+                st.success("✅ AI Extraction Complete!")
+                st.json(extracted_data)
+                
+            except Exception as e:
+                st.error(f"AI Error: {e}")
+                st.stop()
 
-**अब क्या होगा?**
-1. इसे GitHub पर **Commit changes** करो।
-2. अपनी वेबसाइट पर जाओ और **Refresh** करो।
-3. अब तुम देखोगे कि वेबसाइट के बायीं तरफ (Sidebar में) एक डब्बा आ जाएगा, जो साफ-साफ बताएगा कि तुम्हारी चाबी कौन-कौन से मॉडल चला सकती है, और उसने ऑटोमैटिकली कौन सा मॉडल चुना है!
-
-इसे एक बार रन करो भाई! अब यह टूल खुद अपना रास्ता ढूँढ लेगा। मुझे बताओ बायीं तरफ (Sidebar) में कौन सा 'Engine' लिखा हुआ आया? 🚀
+        # Excel Automation
+        with st.spinner("📊 Injecting into Excel Working Papers..."):
+            wb = openpyxl.load_workbook(uploaded_template)
+            sheet = wb.active 
+            
+            sheet['E5'] = ext_pat
+            sheet['E6'] = ext_premium
+            sheet['E7'] = ext_remun
+            sheet['E8'] = ext_past_losses
+            
+            virtual_workbook = io.BytesIO()
+            wb.save(virtual_workbook)
+            virtual_workbook.seek(0)
+            
+            st.markdown("---")
+            st.download_button(
+                label="📥 Download AI-Filled Excel",
+                data=virtual_workbook,
+                file_name="Proffin_Sec198_Final_AI.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
