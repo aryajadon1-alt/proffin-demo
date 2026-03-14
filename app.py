@@ -14,17 +14,14 @@ st.subheader("Smart Engine with Traffic Controller 🚦")
 try:
     genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
     
-    # सिर्फ हाई-लिमिट वाले मॉडल्स ढूँढना
     working_models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
     
-    # Priority: सबसे पहले 'Flash' (क्योंकि इसकी स्पीड और लिमिट सबसे ज्यादा है)
     active_model_name = None
     for name in working_models:
         if 'gemini-1.5-flash' in name:
             active_model_name = name
             break
             
-    # अगर Flash न मिले, तो Pro उठा लो
     if not active_model_name:
         for name in working_models:
             if 'gemini-1.0-pro' in name or 'gemini-pro' in name:
@@ -52,7 +49,11 @@ if uploaded_pdf and uploaded_template:
         # PDF Reading
         with st.spinner("📖 Reading PDF..."):
             pdf_reader = PyPDF2.PdfReader(uploaded_pdf)
-            pdf_text = "".join([page.extract_text() or "" for page in pdf_reader.pages])
+            pdf_text = ""
+            for page in pdf_reader.pages:
+                text = page.extract_text()
+                if text:
+                    pdf_text += text
                 
         # AI Extraction
         with st.spinner("🧠 AI is extracting figures..."):
@@ -73,6 +74,49 @@ if uploaded_pdf and uploaded_template:
             
             try:
                 response = model.generate_content(ai_prompt)
-                
                 raw_text = response.text.strip()
-                if raw_text.startswith("
+                
+                # यहाँ मैंने कोड को कॉपी-पेस्ट प्रूफ कर दिया है
+                if raw_text.startswith('```json'):
+                    raw_text = raw_text[7:]
+                if raw_text.endswith('```'):
+                    raw_text = raw_text[:-3]
+                    
+                extracted_data = json.loads(raw_text.strip())
+                
+                ext_pat = float(extracted_data.get("pat", 0))
+                ext_premium = float(extracted_data.get("premium", 0))
+                ext_remun = float(extracted_data.get("remuneration", 0))
+                ext_past_losses = float(extracted_data.get("past_losses", 0))
+                
+                st.success("✅ AI Extraction Complete!")
+                st.json(extracted_data)
+                
+            except Exception as e:
+                if "429" in str(e) or "Quota" in str(e):
+                    st.warning("🚦 ओवरस्पीडिंग! Google ने 1 मिनट का ब्रेक लिया है। कृपया 60 सेकंड बाद दोबारा बटन दबाएं।")
+                else:
+                    st.error(f"AI Error: {e}")
+                st.stop()
+
+        # Excel Automation
+        with st.spinner("📊 Injecting into Excel Working Papers..."):
+            wb = openpyxl.load_workbook(uploaded_template)
+            sheet = wb.active 
+            
+            sheet['E5'] = ext_pat
+            sheet['E6'] = ext_premium
+            sheet['E7'] = ext_remun
+            sheet['E8'] = ext_past_losses
+            
+            virtual_workbook = io.BytesIO()
+            wb.save(virtual_workbook)
+            virtual_workbook.seek(0)
+            
+            st.markdown("---")
+            st.download_button(
+                label="📥 Download AI-Filled Excel",
+                data=virtual_workbook,
+                file_name="Proffin_Sec198_Final_AI.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
